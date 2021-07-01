@@ -85,6 +85,16 @@ class BlitManager:
         # let the GUI event loop process anything it has to do
         cv.flush_events()
 
+    def suspend(self):
+        """Remove animated property from artists."""
+        for art in self._artists:
+            art.set_animated(False)
+
+    def resume(self):
+        """Add animated property to artists."""
+        for art in self._artists:
+            art.set_animated(True)
+
 
 class MplCanvas(FigureCanvas):
     def __init__(self):
@@ -145,17 +155,11 @@ class PolarizationWidget(QtWidgets.QWidget):
             ax.set_title(title, fontsize=8)
 
     def disable_main_blit(self, event):
-        for art in self.blit_manager._artists:
-            art.set_animated(False)
+        self.blit_manager.suspend()
         self.canvas.draw()
-        # for line in self.multicursor.vlines + self.multicursor.hlines:
-        #     line.set_visible(True)
 
     def restore_main_blit(self, event):
-        for art in self.blit_manager._artists:
-            art.set_animated(True)
-        # for line in self.multicursor.vlines + self.multicursor.hlines:
-        #     line.set_visible(False)
+        self.blit_manager.resume()
         self.canvas.restore_region(self.multicursor.background)
         self.canvas.blit()
 
