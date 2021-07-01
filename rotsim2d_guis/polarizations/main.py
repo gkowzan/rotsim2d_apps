@@ -22,13 +22,19 @@ class Model:
                        'trans: '+','.join(rfpw.trans_labels_deg)
                        for rfpw in rf_pws]
         self.angles = np.linspace(-np.pi/2, np.pi/2, 100)
+        self.axes_labels = (r'$\Phi_2$', r'$\Phi_3$', r'$\Phi_4$')
 
-    def plot_args(self, index, val):
+    def plot_data(self, index, val):
         args = [0, self.angles[:, None], self.angles[None, :]]
         args.insert(index, val*np.pi/180.0)
         data = [rfactor.numeric_rel(*args) for rfactor in self.rfactors]
 
         return data
+
+    def plot_axes_labels(self, index):
+        labels = list(self.axes_labels)
+        del labels[index]
+        return labels
 
 
 class AngleWidget(QtWidgets.QWidget, Ui_AngleWidget):
@@ -45,8 +51,6 @@ class AngleWidget(QtWidgets.QWidget, Ui_AngleWidget):
 
 
 class Polarizations(QtWidgets.QMainWindow):
-    _angles = ['phij', 'phik', 'phil']
-
     def __init__(self, parent=None):
         QtWidgets.QMainWindow.__init__(self, parent)
         self.ui = Ui_MainWindow()
@@ -74,18 +78,29 @@ class Polarizations(QtWidgets.QMainWindow):
         # self.update_plots()
         self.ui.statusbar.clearMessage()
 
-    def update_plots(self, val=None):
+    def _angle_index(self):
         index = 1
         for i in range(len(self._angle_widgets)):
             if self._angle_widgets[i].radio.isChecked():
                 index += i
-                if val is None:
-                    val = self._angle_widgets[i].spin.value()
-        args = self.model.plot_args(index, val)
-        self.ui.mplwdg.figure_update(args)
+
+        return index
+
+    def update_plots(self, val=None):
+        index = self._angle_index()
+        if val is None:
+            val = self._angle_widgets[index-1].spin.value()
+        data = self.model.plot_data(index, val)
+        self.ui.mplwdg.figure_update(data)
+
+    def update_axes_labels(self):
+        index = self._angle_index()
+        labels = self.model.plot_axes_labels(index-1)
+        self.ui.mplwdg.set_axes_labels(labels)
 
     def _radio_toggled(self, button, checked):
         self.update_plots()
+        self.update_axes_labels()
 
     def _add_angle_widget(self, wdg):
         wdg.spin.valueChanged.connect(self.update_plots)

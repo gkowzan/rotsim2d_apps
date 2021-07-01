@@ -152,6 +152,7 @@ class PolarizationWidget(QtWidgets.QWidget):
         subplots = list(self.main_subplots(self.gs))
         del subplots[3]
         self.axes = [self.fig.add_subplot(subplots[i]) for i in range(7)]
+        self.set_axes_labels((r'$\Phi_3$', r'$\Phi_4$'))
         axcbar = self.fig.add_subplot(self.gs[:, -1])
         scalar_map = cm.ScalarMappable(norm=clrs.Normalize(-1, 1),
                                        cmap=cm.get_cmap('RdBu'))
@@ -174,6 +175,11 @@ class PolarizationWidget(QtWidgets.QWidget):
     def set_titles(self, titles):
         for title, ax in zip(titles, self.axes):
             ax.set_title(title, fontsize=8)
+
+    def set_axes_labels(self, labels):
+        ylabel, xlabel = labels
+        for ax in self.axes:
+            ax.set(xlabel=xlabel, ylabel=ylabel)
 
     def disable_main_blit(self, event):
         self.blit_manager.suspend()
