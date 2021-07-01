@@ -12,6 +12,24 @@ import matplotlib.colors as clrs
 from matplotlib.colorbar import Colorbar
 from matplotlib.widgets import MultiCursor
 
+nature_fontsize = 8
+nature_rc = {
+    # 'font.sans-serif': 'Arial',
+    'font.size': nature_fontsize,
+    'axes.labelsize': nature_fontsize,
+    'xtick.labelsize': nature_fontsize,
+    'ytick.labelsize': nature_fontsize,
+    'legend.fontsize': nature_fontsize,
+    'lines.markersize': 1.0,
+    'lines.linewidth': 0.6,
+    'xtick.major.size': 3,
+    'xtick.minor.size': 1.5,
+    'xtick.major.pad': 4,
+    'ytick.major.size': 3,
+    'ytick.major.pad': 4
+}
+matplotlib.rcParams.update(nature_rc)
+
 
 class BlitManager:
     def __init__(self, canvas, animated_artists=()):
@@ -143,6 +161,9 @@ class PolarizationWidget(QtWidgets.QWidget):
         self.images = [self.axes[i].imshow(
             fake_data, aspect='auto', extent=extent, origin='lower', vmin=-1.0,
             vmax=1.0, cmap=cm.get_cmap('RdBu')) for i in range(7)]
+        self.fig.set_constrained_layout_pads(
+            wspace=0.02, hspace=0.02)
+
         self.blit_manager = BlitManager(self.canvas, self.images)
         self.multicursor = MultiCursor(
             self.canvas, self.axes, useblit=True, horizOn=True, vertOn=True,
