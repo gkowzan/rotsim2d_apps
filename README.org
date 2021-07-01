@@ -1,0 +1,11 @@
+This package contains several GUI applications using features of =rotsim2d= library. These are mostly matplotlib plots controlled by Qt widgets.
+
+- =rotsim2d_polarizations= :: shows values of all 7 R-factors in the high-J limit
+  as a function of polarization angles. To reduce dimensionality, the first
+  angle is always set to zero and the user can select which of the remaining
+  three angles is fixed. The dependence on the last two angles is shown as 2D
+  images.
+
+  - place sliders, spin boxes and radio buttons for all three angles
+  - add plots in a grid
+  - implement blitting

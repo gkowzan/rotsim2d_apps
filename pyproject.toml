@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "rotsim2d_guis"
+version = "0.1.0"
+description = "Visualize 2D rovibrational spectra and related quantities"
+authors = ["Grzegorz Kowzan <grzegorz@kowzan.eu>"]
+readme = "README.org"
+homepage = "https://gitlab.com/allisonlab/mdcs/rotsim2d_guis"
+repository = "https://gitlab.com/allisonlab/mdcs/rotsim2d_guis"
+classifiers=[
+	'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Physics']
+include = ['README.org']
+
+[tool.poetry.scripts]
+rotsim2d_polarizations = "rotsim2d_guis.polarizations:run"
+
+[tool.poetry.dependencies]
+rotsim2d = {version=">=0.4.1a0", allow-prereleases=true}
+python = ">=3.7, <3.9"
+numpy = ">=1.16.5"
+matplotlib = ">=3.3.4"
+PyQt5 = "<=5.14.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+tox = "*"
+jedi-language-server = "*"
+
+[[tool.poetry.source]]
+name = "local"
+url = "http://127.0.0.1:4040/simple/"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "wheel"]
+build-backend = "poetry.core.masonry.api"
