@@ -11,8 +11,9 @@ import rotsim2d.symbolic.functions as sym
 
 
 class Model:
-    def __init__(self):
-        kbs = pw.gen_pathways([5], rotor='symmetric', meths=[pw.only_SII],
+    def __init__(self, direction):
+        kbs = pw.gen_pathways([5], rotor='symmetric',
+                              meths=[getattr(pw, 'only_'+direction)],
                               kiter_func=lambda x: [1],
                               pump_overlap=False)
         pws = dl.Pathway.from_kb_list(kbs)
@@ -71,9 +72,20 @@ class Polarizations(QtWidgets.QMainWindow):
         self._add_angle_widget(AngleWidget("Φ<sub>4</sub>"))
         self.ui.anglesLayout.setSpacing(10)
 
+        # add direction radios
+        self.ui.anglesLayout.insertSpacing(0, 10)
+        self._dir_group = QtWidgets.QButtonGroup()
+        self._dir_group.buttonToggled.connect(
+            self._dir_toggled)
+        self._add_dir_radio(QtWidgets.QRadioButton("SIII: k1+k2-k3"))
+        btn = QtWidgets.QRadioButton("SII: k1-k2+k3")
+        btn.setChecked(True)
+        self._add_dir_radio(btn)
+        self._add_dir_radio(QtWidgets.QRadioButton("SI: -k1+k2+k3"))
+
         # add model
         self.ui.statusbar.showMessage("Initializing model")
-        self.model = Model()
+        self.model = Model('SII')
         self.ui.mplwdg.set_titles(self.model.titles)
         # self.update_plots()
         self.ui.statusbar.clearMessage()
@@ -107,6 +119,17 @@ class Polarizations(QtWidgets.QMainWindow):
         self._angle_widgets.append(wdg)
         self.ui.anglesLayout.addWidget(wdg)
         self._radio_group.addButton(wdg.radio)
+
+    def _dir_toggled(self, button, checked):
+        if checked:
+            direction = button.text().split(':')[0]
+            self.model = Model(direction)
+            self.ui.mplwdg.set_titles(self.model.titles)
+            self.update_plots()
+
+    def _add_dir_radio(self, wdg):
+        self.ui.anglesLayout.insertWidget(0, wdg)
+        self._dir_group.addButton(wdg)
 
 def run():
     app = QtWidgets.QApplication(sys.argv)
