@@ -1,13 +1,15 @@
 import sys
-import PyQt5
-from PyQt5 import QtCore, QtWidgets, QtGui, Qt
-from .PolarizationsUI import Ui_MainWindow
-from .AngleWidget import Ui_AngleWidget
+
 import matplotlib as mpl
 import numpy as np
-import rotsim2d.pathways as pw
+import PyQt5
 import rotsim2d.dressedleaf as dl
+import rotsim2d.pathways as pw
 import rotsim2d.symbolic.functions as sym
+from PyQt5 import Qt, QtCore, QtGui, QtWidgets
+
+from .AngleWidget import Ui_AngleWidget
+from .PolarizationsUI import Ui_MainWindow
 
 
 class Model:
