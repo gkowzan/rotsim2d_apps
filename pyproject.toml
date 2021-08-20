@@ -15,9 +15,10 @@ include = ['README.org']
 
 [tool.poetry.scripts]
 rotsim2d_polarizations = "rotsim2d_guis.polarizations:run"
+rotsim2d_peak_picker = "rotsim2d_guis.peak_picker:run"
 
 [tool.poetry.dependencies]
-rotsim2d = {version=">=0.4.1a0", allow-prereleases=true}
+rotsim2d = {version=">=0.4.1a1", allow-prereleases=true}
 python = ">=3.7, <3.9"
 numpy = ">=1.16.5"
 matplotlib = ">=3.3.4"
@@ -27,6 +28,7 @@ PyQt5 = "<=5.14.0"
 pytest = "*"
 tox = "*"
 jedi-language-server = "*"
+isort = "*"
 
 [[tool.poetry.source]]
 name = "local"
