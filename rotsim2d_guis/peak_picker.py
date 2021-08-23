@@ -3,6 +3,7 @@ import math
 import sys
 from argparse import ArgumentParser
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import rotsim2d.dressedleaf as dl
 import rotsim2d.pathways as pw
@@ -38,8 +39,12 @@ def run():
                         help="Limit pathways to those emitted in selected direction (default: %(default)s).")
     parser.add_argument('-a', '--angles', nargs=4, default=[0.0]*4,
                         help="Three beam angles and the detection angle. Each angle should either be a float, 'MA' for magic angle or 'Mug' for muggle angle.")
+    parser.add_argument('-D', '--dpi', type=float,
+                        help="Force DPI.")
     args = parser.parse_args()
     angles = [parse_angle(angle) for angle in args.angles]
+    if args.dpi:
+        mpl.rcParams['figure.dpi'] = args.dpi
 
 # * Vibrational mode
     print('Initializing vibrational mode')
