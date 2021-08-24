@@ -28,17 +28,29 @@ def parse_angle(angle: str) -> float:
 
 def run():
 # * Parse arguments
-    parser = HelpfulParser(description='Plot 2D resonance map for CO or CH3Cl. Clicking on a resonance will print on standard output all pathways contributing to it.')
+    parser = HelpfulParser(
+        description='Plot 2D resonance map for CO or CH3Cl. Clicking on a'
+        ' resonance will print on standard output all pathways contributing to it.')
     parser.add_argument('molecule', choices=('CO', 'CH3Cl'),
-                        help="Molecule,")
-    parser.add_argument('-c', '--colors', type=int, choices=(2, 3), default=3,
-                        help="Mull spectrum with broadband pulses or limited to two colors (default: %(default)d),")
+                        help="Molecule.")
+    parser.add_argument('-c', '--colors', type=int, choices=(1, 2, 3), default=3,
+                        help="Full spectrum with broadband pulses or limited"
+                        " to one or two colors (default: %(default)d).")
     parser.add_argument('-j', '--jmax', type=int,
                         help="Maximum initial angular momentum quantum number,")
-    parser.add_argument('-d', '--direction', choices=("SI", "SII", "SIII"), default="SII",
-                        help="Limit pathways to those emitted in selected direction (default: %(default)s).")
+    parser.add_argument('-d', '--direction', type=str, choices=["SI", "SII", "SII"],
+                        help="Include only pathways phase-matched in a given direction."
+                        "Direction is either `SI`, `SII` or `SIII` (default: %(default)s).")
+    parser.add_argument('-f', "--filter", action='append',
+                        help="Filter pathways by filtering excitation tree. "
+                        "Can be provided multiple times to chain multiple filters.")
     parser.add_argument('-a', '--angles', nargs=4, default=[0.0]*4,
-                        help="Three beam angles and the detection angle. Each angle should either be a float, 'MA' for magic angle or 'Mug' for muggle angle.")
+                        help="Three beam angles and the detection angle. "
+                        "Each angle should either be a float, "
+                        "'MA' for magic angle or 'Mug' for muggle angle."
+                        "XXXX is the default polarization.")
+    parser.add_argument('-t', '--time', type=float, default=1.0,
+                        help="Waiting time in ps (default: %(default)f).")
     parser.add_argument('-D', '--dpi', type=float,
                         help="Force DPI.")
     args = parser.parse_args()
@@ -63,12 +75,19 @@ def run():
         else:
             jmax = 20
 
+# ** Filters
     meths = [getattr(pw, 'only_'+args.direction)]
+    if args.colors == 2:
+        meths.append(pw.remove_threecolor)
+    elif args.colors == 1:
+        meths.append(pw.only_dfwm)
+    meths.extedn([getattr(pw, filter) for filter in args.filter])
+# ** Calculate peaks
     pws = pw.gen_pathways(range(jmax), meths=meths,
                           rotor='symmetric' if args.molecule == 'CH3Cl' else 'linear',
-                          kiter_func=lambda x: range(x if x<10 else 10))
+                          kiter_func=lambda x: range(x))
     dressed_pws = dl.DressedPathway.from_kb_list(pws, vib_mode, T)
-    peaks, dls = dl.peak_list(dressed_pws, return_dls=True, tw=1.0e-12, angles=angles)
+    peaks, dls = dl.peak_list(dressed_pws, return_dls=True, tw=args.time*1e-12, angles=angles)
 
 # * Visualize
     fig_dict = vis.plot2d_scatter(peaks, scatter_kwargs=dict(picker=True))
