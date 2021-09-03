@@ -39,6 +39,7 @@ pytest = "*"
 tox = "*"
 jedi-language-server = "*"
 isort = "*"
+bump2version = ">=1.0.0"
 
 [[tool.poetry.source]]
 name = "local"
