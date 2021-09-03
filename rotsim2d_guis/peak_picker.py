@@ -139,7 +139,7 @@ def run():
         """Show information about the peak pathway."""
         if event.artist != sc:
             return
-        dl.pprint_dllist(dls[event.ind[0]], abstract=abstract)
+        dl.pprint_dllist(dls[event.ind[0]], abstract=abstract, angles=angles)
 
 
     fig.canvas.mpl_connect('pick_event', scatter_onpick)

@@ -28,7 +28,7 @@ rotsim2d_polarizations = "rotsim2d_guis.polarizations:run"
 rotsim2d_peak_picker = "rotsim2d_guis.peak_picker:run"
 
 [tool.poetry.dependencies]
-rotsim2d = {version=">=0.4.1a4", allow-prereleases=true}
+rotsim2d = {version=">=0.4.1a5", allow-prereleases=true}
 python = ">=3.7, <3.9"
 numpy = ">=1.16.5"
 matplotlib = ">=3.3.4"
