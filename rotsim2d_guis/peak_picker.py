@@ -1,13 +1,17 @@
 # * Imports
+import argparse
 import math
 import sys
 from argparse import ArgumentParser
 
 import matplotlib as mpl
+import matplotlib.colors as colors
 import matplotlib.pyplot as plt
+import numpy as np
 import rotsim2d.dressedleaf as dl
 import rotsim2d.pathways as pw
 import rotsim2d.visual as vis
+from matplotlib.colorbar import Colorbar
 from molspecutils.molecule import CH3ClAlchemyMode, COAlchemyMode
 
 
@@ -18,41 +22,57 @@ class HelpfulParser(ArgumentParser):
         sys.exit(2)
 
 def parse_angle(angle: str) -> float:
+    sign = 1.0
+    angle = angle.lstrip()
+    if angle[0] == '-':
+        sign = -1.0
+        angle = angle[1:]
     if angle == 'MA':
-        return math.atan(math.sqrt(2))
+        fangle = math.atan(math.sqrt(2))
     elif angle == 'Mug':
-        return math.asin(2*math.sqrt(7)/7)
+        fangle = math.asin(2*math.sqrt(7)/7)
     else:
-        return float(angle)
+        fangle = float(angle)
 
+    return sign*fangle
 
 def run():
 # * Parse arguments
     parser = HelpfulParser(
         description='Plot 2D resonance map for CO or CH3Cl. Clicking on a'
-        ' resonance will print on standard output all pathways contributing to it.')
+        ' resonance will print on standard output all pathways contributing to it.',
+        add_help=False)
     parser.add_argument('molecule', choices=('CO', 'CH3Cl'),
                         help="Molecule.")
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                        help='Show this help message and exit.')
     parser.add_argument('-c', '--colors', type=int, choices=(1, 2, 3), default=3,
                         help="Full spectrum with broadband pulses or limited"
                         " to one or two colors (default: %(default)d).")
     parser.add_argument('-j', '--jmax', type=int,
-                        help="Maximum initial angular momentum quantum number,")
-    parser.add_argument('-d', '--direction', type=str, choices=["SI", "SII", "SII"],
-                        help="Include only pathways phase-matched in a given direction."
-                        "Direction is either `SI`, `SII` or `SIII` (default: %(default)s).")
+                        help="Maximum initial angular momentum quantum number.")
+    parser.add_argument('-k', '--kmax', type=int,
+                        help="Maximum projection on principal molecular axis.")
+    parser.add_argument('--no-abstract', action='store_true',
+                        help='Print actual J values.')
+    parser.add_argument('-d', '--direction', type=str, choices=["SI", "SII", "SIII"],
+                        default="SII",
+                        help="Include only pathways phase-matched in a given direction. "
+                        "(default: %(default)s).")
     parser.add_argument('-f', "--filter", action='append',
                         help="Filter pathways by filtering excitation tree. "
                         "Can be provided multiple times to chain multiple filters.")
-    parser.add_argument('-a', '--angles', nargs=4, default=[0.0]*4,
+    parser.add_argument('-a', '--angles', nargs=4, default=['0.0']*4,
                         help="Three beam angles and the detection angle. "
                         "Each angle should either be a float, "
                         "'MA' for magic angle or 'Mug' for muggle angle."
-                        "XXXX is the default polarization.")
+                        " XXXX is the default polarization.")
     parser.add_argument('-t', '--time', type=float, default=1.0,
                         help="Waiting time in ps (default: %(default)f).")
     parser.add_argument('-D', '--dpi', type=float,
                         help="Force DPI.")
+    parser.add_argument('--symmetric-log', action='store_true',
+                        help="Use symmetric logarithmic scaling for color normalization.")
     args = parser.parse_args()
     angles = [parse_angle(angle) for angle in args.angles]
     if args.dpi:
@@ -81,24 +101,46 @@ def run():
         meths.append(pw.remove_threecolor)
     elif args.colors == 1:
         meths.append(pw.only_dfwm)
-    meths.extedn([getattr(pw, filter) for filter in args.filter])
+    if args.filter:
+        meths.extend([getattr(pw, filter) for filter in args.filter])
 # ** Calculate peaks
+    if args.kmax:
+        kiter_func = lambda x: range((x if x<=args.kmax else kmax)+1)
+    else:
+        kiter_func = lambda x: range(x+1)
     pws = pw.gen_pathways(range(jmax), meths=meths,
                           rotor='symmetric' if args.molecule == 'CH3Cl' else 'linear',
-                          kiter_func=lambda x: range(x))
+                          kiter_func=kiter_func)
     dressed_pws = dl.DressedPathway.from_kb_list(pws, vib_mode, T)
     peaks, dls = dl.peak_list(dressed_pws, return_dls=True, tw=args.time*1e-12, angles=angles)
+    vminmax = np.max(np.abs(np.array(peaks.sigs)))*1.1
 
 # * Visualize
-    fig_dict = vis.plot2d_scatter(peaks, scatter_kwargs=dict(picker=True))
+    if args.symmetric_log:
+        norm = colors.SymLogNorm(linthresh=vminmax*1e24/100.0,
+                                 vmin=-vminmax*1e24, vmax=vminmax*1e24)
+    else:
+        norm = colors.Normalize(vmin=-vminmax*1e24, vmax=vminmax*1e24)
 
+    fig = plt.figure(constrained_layout=True)
+    gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=[20, 1])
+    ax = fig.add_subplot(gs[0])
+    sc = ax.scatter(peaks.probes, peaks.pumps, s=10.0, c=np.array(peaks.sigs)*1e24,
+                    cmap='seismic', norm=norm, picker=True)
+    ax.set(xlabel=r'$\Omega_3$ (cm$^{-1}$)',
+           ylabel=r'$\Omega_1$ (cm$^{-1}$)')
 
+    axcbar = fig.add_subplot(gs[-1])
+    cbar = Colorbar(mappable=sc, ax=axcbar, orientation='vertical', extend='neither')
+    cbar.set_label(r"Amplitude ($10^{-24}$ C$\cdot$m/(N/C)$^3$)")
+
+    abstract = not args.no_abstract
     def scatter_onpick(event):
         """Show information about the peak pathway."""
-        if event.artist != fig_dict['sc']:
+        if event.artist != sc:
             return
-        dl.pprint_dllist(dls[event.ind[0]], abstract=True)
+        dl.pprint_dllist(dls[event.ind[0]], abstract=abstract)
 
 
-    fig_dict['fig'].canvas.mpl_connect('pick_event', scatter_onpick)
+    fig.canvas.mpl_connect('pick_event', scatter_onpick)
     plt.show()
