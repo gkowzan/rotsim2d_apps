@@ -11,7 +11,17 @@ classifiers=[
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Physics']
-include = ['README.org']
+packages = [
+ { include = "rotsim2d_guis/*.py" },
+ { include = "rotsim2d_guis/polarizations/*.py" }
+]
+include = [
+ { path = "rotsim2d_guis/polarizations/AngleWidget.py" },
+ { path = "rotsim2d_guis/polarizations/PolarizationsUI.py" },
+ { path = "rotsim2d_guis/Makefile", format="sdist" },
+ { path = "rotsim2d_guis/polarizations/Makefile", format="sdist" },
+ { path = "rotsim2d_guis/polarizations/*.ui", format="sdist" }
+]
 
 [tool.poetry.scripts]
 rotsim2d_polarizations = "rotsim2d_guis.polarizations:run"
