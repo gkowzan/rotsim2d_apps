@@ -1,5 +1,5 @@
 TOPTARGETS := all clean
-SUBDIRS := polarizations
+SUBDIRS := polarizations waiting_time
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

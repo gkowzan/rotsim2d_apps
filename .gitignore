@@ -1,3 +1,4 @@
 __pycache__
 rotsim2d_guis/polarizations/AngleWidget.py
 rotsim2d_guis/polarizations/PolarizationsUI.py
+rotsim2d_guis/waiting_time/Ui_*.py
