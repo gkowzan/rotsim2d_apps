@@ -16,7 +16,7 @@ class Model:
     def __init__(self, direction):
         kbs = pw.gen_pathways([5], rotor='symmetric',
                               meths=[getattr(pw, 'only_'+direction)],
-                              kiter_func=lambda x: [1],
+                              kiter_func="[1]",
                               pump_overlap=False)
         pws = dl.Pathway.from_kb_list(kbs)
         rf_pws = sym.RFactorPathways.from_pwlist(pws, True, True)
