@@ -4,6 +4,7 @@ import math
 import sys
 from argparse import ArgumentParser
 
+from asteval import Interpreter
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -21,26 +22,13 @@ class HelpfulParser(ArgumentParser):
         self.print_help()
         sys.exit(2)
 
-def parse_angle(angle: str) -> float:
-    sign = 1.0
-    angle = angle.lstrip()
-    if angle[0] == '-':
-        sign = -1.0
-        angle = angle[1:]
-    if angle == 'MA':
-        fangle = math.atan(math.sqrt(2))
-    elif angle == 'Mug':
-        fangle = math.asin(2*math.sqrt(7)/7)
-    else:
-        fangle = float(angle)
-
-    return sign*fangle
 
 def run():
 # * Parse arguments
     parser = HelpfulParser(
-        description='Plot 2D resonance map for CO or CH3Cl. Clicking on a'
-        ' resonance will print on standard output all pathways contributing to it.',
+        description='Plot 2D resonance map of 2D spectrum of CO or CH3Cl.'
+        ' Clicking on a resonance will print on standard output all pathways'
+        ' contributing to it.',
         add_help=False)
     parser.add_argument('molecule', choices=('CO', 'CH3Cl'),
                         help="Molecule.")
@@ -57,24 +45,27 @@ def run():
                         help='Print actual J values.')
     parser.add_argument('-d', '--direction', type=str, choices=["SI", "SII", "SIII"],
                         default="SII",
-                        help="Include only pathways phase-matched in a given direction. "
-                        "(default: %(default)s).")
+                        help="Include only pathways phase-matched in a given"
+                        " direction. (default: %(default)s).")
     parser.add_argument('-f', "--filter", action='append',
                         help="Filter pathways by filtering excitation tree. "
                         "Can be provided multiple times to chain multiple filters.")
     parser.add_argument('-a', '--angles', nargs=4, default=['0.0']*4,
                         help="Three beam angles and the detection angle. "
-                        "Each angle should either be a float, "
-                        "'MA' for magic angle or 'Mug' for muggle angle."
-                        " XXXX is the default polarization.")
+                        "Each angle can be a Python mathematical expression"
+                        " using standard arithmetic operators and math"
+                        " functions from Python math module.")
     parser.add_argument('-t', '--time', type=float, default=1.0,
                         help="Waiting time in ps (default: %(default)f).")
     parser.add_argument('-D', '--dpi', type=float,
                         help="Force DPI.")
     parser.add_argument('--symmetric-log', action='store_true',
-                        help="Use symmetric logarithmic scaling for color normalization.")
+                        help="Use symmetric logarithmic scaling for color"
+                        " normalization.")
     args = parser.parse_args()
-    angles = [parse_angle(angle) for angle in args.angles]
+
+    aeval = Interpreter(use_numpy=False, minimal=True)
+    angles = [aeval(angle) for angle in args.angles]
     if args.dpi:
         mpl.rcParams['figure.dpi'] = args.dpi
 
