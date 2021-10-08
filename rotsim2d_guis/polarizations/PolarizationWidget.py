@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-from contextlib import contextmanager
-from PyQt5 import QtGui, QtWidgets
-import numpy as np
 import matplotlib
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
 import matplotlib.cm as cm
 import matplotlib.colors as clrs
+import numpy as np
+from matplotlib.backends.backend_qt5agg import \
+    NavigationToolbar2QT as NavigationToolbar
 from matplotlib.colorbar import Colorbar
 from matplotlib.widgets import MultiCursor
+from PyQt5 import QtWidgets
+
+from ..MplCanvas import MplCanvas
 
 nature_fontsize = 8
 nature_rc = {
@@ -112,16 +111,6 @@ class BlitManager:
         """Add animated property to artists."""
         for art in self._artists:
             art.set_animated(True)
-
-
-class MplCanvas(FigureCanvas):
-    def __init__(self):
-        self.fig = Figure(frameon=False)
-
-        FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding,
-                                   QtWidgets.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
 
 
 class PolarizationWidget(QtWidgets.QWidget):
