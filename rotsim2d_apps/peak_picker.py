@@ -96,14 +96,16 @@ def run():
         meths.extend([getattr(pw, filter) for filter in args.filter])
 # ** Calculate peaks
     if args.kmax:
-        kiter_func = lambda x: range((x if x<=args.kmax else kmax)+1)
+        kiter_func = "range((j if j<={kmax:d} else {kmax:d})+1)".format(args.kmax)
     else:
-        kiter_func = lambda x: range(x+1)
-    pws = pw.gen_pathways(range(jmax), meths=meths,
-                          rotor='symmetric' if args.molecule == 'CH3Cl' else 'linear',
-                          kiter_func=kiter_func)
+        kiter_func = "range(j+1)"
+    pws = pw.gen_pathways(
+        range(jmax), meths=meths,
+        rotor='symmetric' if args.molecule == 'CH3Cl' else 'linear',
+        kiter_func=kiter_func)
     dressed_pws = dl.DressedPathway.from_kb_list(pws, vib_mode, T)
-    peaks, dls = dl.peak_list(dressed_pws, return_dls=True, tw=args.time*1e-12, angles=angles)
+    peaks, dls = dl.peak_list(
+        dressed_pws, return_dls=True, tw=args.time*1e-12, angles=angles)
     vminmax = np.max(np.abs(np.array(peaks.sigs)))*1.1
 
 # * Visualize

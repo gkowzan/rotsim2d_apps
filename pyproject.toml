@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "rotsim2d_guis"
+name = "rotsim2d_apps"
 version = "0.2.0"
 description = "Visualize 2D rovibrational spectra and related quantities"
 authors = ["Grzegorz Kowzan <grzegorz@kowzan.eu>"]
@@ -12,25 +12,25 @@ classifiers=[
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Physics']
 packages = [
- { include = "rotsim2d_guis/*.py" },
- { include = "rotsim2d_guis/polarizations/*.py" }
+ { include = "rotsim2d_apps/*.py" },
+ { include = "rotsim2d_apps/polarizations/*.py" }
 ]
 include = [
- { path = "rotsim2d_guis/polarizations/AngleWidget.py" },
- { path = "rotsim2d_guis/polarizations/PolarizationsUI.py" },
- { path = "rotsim2d_guis/Makefile", format="sdist" },
- { path = "rotsim2d_guis/polarizations/Makefile", format="sdist" },
- { path = "rotsim2d_guis/polarizations/*.ui", format="sdist" }
+ { path = "rotsim2d_apps/polarizations/AngleWidget.py" },
+ { path = "rotsim2d_apps/polarizations/PolarizationsUI.py" },
+ { path = "rotsim2d_apps/Makefile", format="sdist" },
+ { path = "rotsim2d_apps/polarizations/Makefile", format="sdist" },
+ { path = "rotsim2d_apps/polarizations/*.ui", format="sdist" }
 ]
 
 [tool.poetry.scripts]
-rotsim2d_polarizations = "rotsim2d_guis.polarizations:run"
-rotsim2d_peak_picker = "rotsim2d_guis.peak_picker:run"
-rotsim2d_waiting_time = "rotsim2d_guis.waiting_time:run"
-rotsim2d_calc = "rotsim2d_guis.rotsim2d_calc:run"
+rotsim2d_polarizations = "rotsim2d_apps.polarizations:run"
+rotsim2d_peak_picker = "rotsim2d_apps.peak_picker:run"
+rotsim2d_waiting_time = "rotsim2d_apps.waiting_time:run"
+rotsim2d_calc = "rotsim2d_apps.rotsim2d_calc:run"
 
 [tool.poetry.dependencies]
-rotsim2d = {version="0.5.0", allow-prereleases=true}
+rotsim2d = {version="0.7.0", allow-prereleases=true}
 python = ">=3.7, <3.9"
 numpy = ">=1.16.5"
 asteval = ">=0.9.25"
