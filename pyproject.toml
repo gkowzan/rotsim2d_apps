@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rotsim2d_apps"
-version = "0.2.0"
+version = "0.3.0"
 description = "Visualize 2D rovibrational spectra and related quantities"
 authors = ["Grzegorz Kowzan <grzegorz@kowzan.eu>"]
 readme = "README.org"
