@@ -1,4 +1,5 @@
 """Calculate list of 2D peaks of 2D spectrum"""
+from pathlib import Path
 import string
 import sys
 from argparse import ArgumentParser
@@ -60,8 +61,13 @@ def run():
 
             if not isinstance(params['spectrum']['pressure'], Sequence):
                 pressures = [params['spectrum']['pressure']]
+                if 'file' not in params['output']:
+                    params['output']['file'] = Path(input_path).with_suffix('.h5')
             else:
                 pressures = params['spectrum']['pressure'][:]
+                if 'file' not in params['output']:
+                    params['output']['file'] = Path(input_path).stem +\
+                        '_{:.1f}.h5'
             for p in pressures:
                 params['spectrum']['pressure'] = p
                 print("Pressure = {:.2f} atm".format(p))
