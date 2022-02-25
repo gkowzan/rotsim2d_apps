@@ -96,7 +96,7 @@ def run():
         meths.extend([getattr(pw, filter) for filter in args.filter])
 # ** Calculate peaks
     if args.kmax:
-        kiter_func = "range((j if j<={kmax:d} else {kmax:d})+1)".format(args.kmax)
+        kiter_func = "range((j if j<={kmax:d} else {kmax:d})+1)".format(kmax=args.kmax)
     else:
         kiter_func = "range(j+1)"
     pws = pw.gen_pathways(
