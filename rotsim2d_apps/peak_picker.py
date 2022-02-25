@@ -101,27 +101,32 @@ def run():
         kiter_func=kiter_func)
     dressed_pws = dl.DressedPathway.from_kb_list(pws, vib_mode, T)
     peaks, dls = dl.peak_list(
-        dressed_pws, return_dls=True, tw=args.time*1e-12, angles=angles)
-    vminmax = np.max(np.abs(np.array(peaks.sigs)))*1.1
+        dressed_pws, quantity='line_intensity',
+        return_dls=True, tw=args.time*1e-12, angles=angles)
+    vminmax = np.max(np.abs(np.array(peaks.sigs)))*1.1*1e6
 
 # * Visualize
     if args.symmetric_log:
-        norm = colors.SymLogNorm(linthresh=vminmax*1e24/100.0,
-                                 vmin=-vminmax*1e24, vmax=vminmax*1e24)
+        norm = colors.SymLogNorm(linthresh=vminmax/100.0,
+                                 vmin=-vminmax, vmax=vminmax)
     else:
-        norm = colors.Normalize(vmin=-vminmax*1e24, vmax=vminmax*1e24)
+        norm = colors.Normalize(vmin=-vminmax, vmax=vminmax)
 
     fig = plt.figure(constrained_layout=True)
     gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=[20, 1])
     ax = fig.add_subplot(gs[0])
-    sc = ax.scatter(peaks.probes, peaks.pumps, s=10.0, c=np.array(peaks.sigs)*1e24,
+    sc = ax.scatter(peaks.probes, peaks.pumps, s=10.0, c=np.array(peaks.sigs)*1e6,
                     cmap='seismic', norm=norm, picker=True)
     ax.set(xlabel=r'$\Omega_3$ (cm$^{-1}$)',
            ylabel=r'$\Omega_1$ (cm$^{-1}$)')
 
     axcbar = fig.add_subplot(gs[-1])
     cbar = Colorbar(mappable=sc, ax=axcbar, orientation='vertical', extend='neither')
-    cbar.set_label(r"Amplitude ($10^{-24}$ C$\cdot$m/(N/C)$^3$)")
+    amp_str = r"$S^{(3)}\cos \Omega_2 t_2$"
+    cbar.set_label(amp_str + r" ($10^{-6}$ m$^{2}$\,Hz/(V\,s/m)$^2$)")
+
+    ax.set_title(str(args.filter), fontsize=10)
+    fig.canvas.set_window_title(str(args.filter))
 
     abstract = not args.no_abstract
     def scatter_onpick(event):
