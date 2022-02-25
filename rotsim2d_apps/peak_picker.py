@@ -43,10 +43,6 @@ def run():
                         help="Maximum projection on principal molecular axis.")
     parser.add_argument('--no-abstract', action='store_true',
                         help='Print actual J values.')
-    parser.add_argument('-d', '--direction', type=str, choices=["SI", "SII", "SIII"],
-                        default="SII",
-                        help="Include only pathways phase-matched in a given"
-                        " direction. (default: %(default)s).")
     parser.add_argument('-f', "--filter", action='append',
                         help="Filter pathways by filtering excitation tree. "
                         "Can be provided multiple times to chain multiple filters.")
@@ -87,7 +83,7 @@ def run():
             jmax = 20
 
 # ** Filters
-    meths = [getattr(pw, 'only_'+args.direction)]
+    meths = []
     if args.colors == 2:
         meths.append(pw.remove_threecolor)
     elif args.colors == 1:
