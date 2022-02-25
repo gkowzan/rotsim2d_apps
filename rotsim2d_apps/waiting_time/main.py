@@ -10,6 +10,7 @@ import rotsim2d.pathways as pw
 import rotsim2d.propagate as prop
 import rotsim2d.symbolic.functions as sym
 import rotsim2d.visual.functions as vis
+from rotsim2d.rcpeaks import TBs, nth, RCPeaks
 import scipy.constants as C
 from molspecutils.molecule import CH3ClAlchemyMode, COAlchemyMode
 from PyQt5 import QtCore, QtWidgets
@@ -33,46 +34,6 @@ nature_rc = {
     'ytick.major.pad': 4
 }
 mpl.rcParams.update(nature_rc)
-
-TBs = {'CH3Cl': 1/(0.44340*100.0*C.c),
-       'CO': 1/(1.93128087*100.0*C.c)}
-
-
-def nth(it1, index):
-    return next(it.islice(it1, index, None), None)
-
-
-class RCPeaks:
-    def __init__(self, molecule: str, direction:str, j: int, k: int):
-        if molecule == "CH3Cl":
-            pws = pw.gen_pathways(
-                [j], meths=[getattr(pw, 'only_'+direction),
-                            pw.only_interstates],
-                rotor='symmetric', kiter_func="[{:d}]".format(k))
-            mode = CH3ClAlchemyMode()
-        elif molecule == "CO":
-            pws = pw.gen_pathways(
-                [j], meths=[getattr(pw, 'only_'+direction),
-                            pw.only_interstates],
-                rotor='linear')
-            mode = COAlchemyMode()
-        else:
-            raise ValueError("Unknown molecule")
-        self.rc_peaks = dl.split_by_peaks(
-            dl.DressedPathway.from_kb_list(pws, mode, 296.0),
-            abstract=True)
-        self.peaks = self.rc_peaks.keys()
-        self.dps = self.rc_peaks.values()
-
-    def __len__(self):
-        return len(self.rc_peaks)
-
-    def render(self, index: int):
-        key = nth(iter(self.peaks), index)
-        return "{branch:s}, {peak:s}, ({num:d})".format(
-            branch=self.rc_peaks[key][0].peak_label,
-            peak=str(key),
-            num=len(self.rc_peaks[key]))
 
 
 class DressedPathwaysModel(QtCore.QAbstractListModel):

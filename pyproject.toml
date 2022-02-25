@@ -30,7 +30,7 @@ rotsim2d_waiting_time = "rotsim2d_apps.waiting_time:run"
 rotsim2d_calc = "rotsim2d_apps.rotsim2d_calc:run"
 
 [tool.poetry.dependencies]
-rotsim2d = {version="0.7.0", allow-prereleases=true}
+rotsim2d = {version="0.8.0post4", allow-prereleases=true}
 python = ">=3.7, <3.9"
 numpy = ">=1.16.5"
 asteval = ">=0.9.25"
