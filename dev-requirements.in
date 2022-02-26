@@ -1,0 +1,8 @@
+-c requirements.txt
+pytest
+isort
+bump2version
+mypy
+build
+twine
+pip-tools
