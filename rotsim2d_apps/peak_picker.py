@@ -4,7 +4,6 @@ import math
 import sys
 from argparse import ArgumentParser
 
-from asteval import Interpreter
 import matplotlib as mpl
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -12,6 +11,7 @@ import numpy as np
 import rotsim2d.dressedleaf as dl
 import rotsim2d.pathways as pw
 import rotsim2d.visual as vis
+from asteval import Interpreter
 from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar
 from molspecutils.molecule import CH3ClAlchemyMode, COAlchemyMode
