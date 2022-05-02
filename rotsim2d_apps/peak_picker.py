@@ -12,6 +12,7 @@ import numpy as np
 import rotsim2d.dressedleaf as dl
 import rotsim2d.pathways as pw
 import rotsim2d.visual as vis
+from matplotlib.cm import get_cmap
 from matplotlib.colorbar import Colorbar
 from molspecutils.molecule import CH3ClAlchemyMode, COAlchemyMode
 
@@ -115,8 +116,8 @@ def run():
     gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=[20, 1])
     ax = fig.add_subplot(gs[0])
     sc = ax.scatter(peaks.probes, peaks.pumps, s=10.0,
-                    c=np.array(peaks.intensities)*1e6,
-                    cmap='seismic', norm=norm, picker=True)
+                    c=-np.array(peaks.intensities)*1e6,
+                    cmap=get_cmap('RdBu').reversed(), norm=norm, picker=True)
     ax.set(xlabel=r'$\Omega_3$ (cm$^{-1}$)',
            ylabel=r'$\Omega_1$ (cm$^{-1}$)')
 
