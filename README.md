@@ -14,7 +14,7 @@ This package contains several GUI applications using features of =rotsim2d= libr
   will plot CO intensities phase-matched in SII direction, plotted with symmetric logarithmic scale.
   
   ``` sh 
-  rotsim2d_peak_picker -j 10 -k 2 -d SI --symmetric-log CH3Cl 
+  rotsim2d_peak_picker -j 10 -k 2 -f only_SI --symmetric-log CH3Cl 
   ```
   will plot CH3Cl intensities for J up to 10 and K up to 2, phase-matched in SI direction, using symmetric logarithmic scale.
 - `rotsim2d_waiting_time`, investigate waiting time dependence
