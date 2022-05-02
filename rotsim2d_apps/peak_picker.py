@@ -46,7 +46,8 @@ def run():
                         help='Print actual J values.')
     parser.add_argument('-f', "--filter", action='append',
                         help="Filter pathways by filtering excitation tree. "
-                        "Can be provided multiple times to chain multiple filters.")
+                        "Can be provided multiple times to chain multiple filters."
+                        "List of filter: https://allisonlab.gitlab.io/mdcs/rotsim2d/api/pathways.html#tree-filtering-functions")
     parser.add_argument('-a', '--angles', nargs=4, default=['0.0']*4,
                         help="Three beam angles and the detection angle. "
                         "Each angle can be a Python mathematical expression"
