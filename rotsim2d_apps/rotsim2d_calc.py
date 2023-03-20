@@ -7,7 +7,6 @@ from pprint import pprint
 from typing import List, Sequence
 
 import rotsim2d.dressedleaf as dl
-import rotsim2d.pathways as pw
 import rotsim2d.propagate as prop
 import toml
 from asteval import Interpreter
@@ -25,15 +24,9 @@ def named_fields(s: str) -> List[str]:
             if x[1] is not None]
 
 
-def run():
-    parser = HelpfulParser(
-        description="Calculate and save to file list of 2D peaks or 2D spectrum.",
-        add_help=False)
-    parser.add_argument("input_paths", nargs='+',
-                        help="Paths to input files.",)
-    args = parser.parse_args()
+def calculate(paths):
     aeval = Interpreter(use_numpy=False, minimal=True)
-    for input_path in args.input_paths:
+    for input_path in paths:
         params = toml.load(input_path)
         pprint(params)
 
@@ -79,6 +72,16 @@ def run():
                     output_file,
                     fs_pu, fs_pr, spec2d,
                     params)
+
+
+def run():
+    parser = HelpfulParser(
+        description="Calculate and save to file list of 2D peaks or 2D spectrum.",
+        add_help=False)
+    parser.add_argument("input_paths", nargs='+',
+                        help="Paths to input files.",)
+    args = parser.parse_args()
+    calculate(args.input_paths)
 
 
 if __name__ == '__main__':
