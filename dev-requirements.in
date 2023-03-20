@@ -6,3 +6,5 @@ mypy
 build
 twine
 pip-tools
+jupyter
+PyQt5
