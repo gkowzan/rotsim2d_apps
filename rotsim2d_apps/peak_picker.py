@@ -128,7 +128,7 @@ def run():
     cbar.set_label(amp_str + r" ($10^{-6}$ m$^{2}$ Hz/(V s/m)$^2$)")
 
     ax.set_title(str(args.filter), fontsize=10)
-    fig.canvas.set_window_title(str(args.filter))
+    fig.canvas.manager.set_window_title(str(args.filter))
 
     abstract = not args.no_abstract
     def scatter_onpick(event):
