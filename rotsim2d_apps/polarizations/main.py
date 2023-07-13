@@ -1,42 +1,40 @@
-import sys
+from typing import List
 
-import matplotlib as mpl
 import numpy as np
 import PyQt5
 import rotsim2d.dressedleaf as dl
 import rotsim2d.pathways as pw
 import rotsim2d.symbolic.functions as sym
+import rotsim2d.symbolic.results as symr
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets
+import pyqtgraph as pg
 
 from .AngleWidget import Ui_AngleWidget
 from .PolarizationsUI import Ui_MainWindow
+from .PolarizationWidget import PolarizationClassesWidget
 
 
 class Model:
-    def __init__(self, direction):
-        kbs = pw.gen_pathways([5], rotor='symmetric',
-                              meths=[getattr(pw, 'only_'+direction)],
-                              kiter_func="[1]",
-                              pump_overlap=False)
-        pws = dl.Pathway.from_kb_list(kbs)
-        rf_pws = sym.RFactorPathways.from_pwlist(pws, True, True)
-        self.rfactors = [rfpw.rfactor for rfpw in rf_pws]
-        self.titles = ['peaks: '+','.join(rfpw.peak_labels)+'\n'+
-                       'trans: '+','.join(rfpw.trans_labels_deg)
-                       for rfpw in rf_pws]
-        self.angles = np.linspace(-np.pi/2, np.pi/2, 100)
-        self.axes_labels = (r'$\Phi_2$', r'$\Phi_3$', r'$\Phi_4$')
+    ANGLES_SIZE = 250
 
-    def plot_data(self, index, val):
+    def __init__(self):
+        self.rfactors = {int(k): sym.RFactor(v, 'experimental')
+                         for v, k in symr.theta_labels.items()}
+        self.angles = np.linspace(-np.pi/2, np.pi/2, self.ANGLES_SIZE)
+        self.axes_labels = (r'&Phi;<sub>2</sub>', r'&Phi;<sub>3</sub>',
+                            r'&Phi;<sub>4</sub>')
+
+    def data_for_plots(self, angle_index: int, angle: float) -> List[np.ndarray]:
         args = [0, self.angles[:, None], self.angles[None, :]]
-        args.insert(index, val*np.pi/180.0)
-        data = [rfactor.numeric_rel(*args) for rfactor in self.rfactors]
+        args.insert(angle_index, angle*np.pi/180.0)
 
-        return data
+        return [self.rfactors[i+1].numeric_rel(*args)
+                for i in range(len(self.rfactors))]
 
-    def plot_axes_labels(self, index):
+    def axes_labels_for_plot(self, angle_index: int) -> List[str]:
         labels = list(self.axes_labels)
-        del labels[index]
+        del labels[angle_index]
+
         return labels
 
 
@@ -61,7 +59,7 @@ class Polarizations(QtWidgets.QMainWindow):
 
         # take a reasonable amount of screen size
         screen = QtWidgets.QDesktopWidget().availableGeometry()
-        self.resize(screen.width()*0.7, screen.height()*0.7)
+        self.resize(int(screen.width()*0.7), int(screen.height()*0.7))
 
         # add angle widgets
         self._radio_group = QtWidgets.QButtonGroup()
@@ -74,22 +72,19 @@ class Polarizations(QtWidgets.QMainWindow):
         self._add_angle_widget(AngleWidget("Φ<sub>4</sub>"))
         self.ui.anglesLayout.setSpacing(10)
 
-        # add direction radios
-        self.ui.anglesLayout.insertSpacing(0, 10)
-        self._dir_group = QtWidgets.QButtonGroup()
-        self._dir_group.buttonToggled.connect(
-            self._dir_toggled)
-        self._add_dir_radio(QtWidgets.QRadioButton("SIII: k1+k2-k3"))
-        btn = QtWidgets.QRadioButton("SII: k1-k2+k3")
-        btn.setChecked(True)
-        self._add_dir_radio(btn)
-        self._add_dir_radio(QtWidgets.QRadioButton("SI: -k1+k2+k3"))
+        label1 = QtWidgets.QLabel("Select one of the angles above to fix it at a specific value.<br><br>Polarization dependence as a function of remaining angles for each polarization class is shown on the right.<br><br>&Phi;<sub>1</sub> is fixed at 0&#176;.")
+        label1.setWordWrap(True)
+        self.ui.anglesLayout.addWidget(label1)
+
+        # add polarization widget
+        self.classes_widget = PolarizationClassesWidget(
+            Model.ANGLES_SIZE, self.ui.centralwidget)
+        self.ui.centrallayout.addWidget(self.classes_widget)
 
         # add model
         self.ui.statusbar.showMessage("Initializing model")
-        self.model = Model('SII')
-        self.ui.mplwdg.set_titles(self.model.titles)
-        # self.update_plots()
+        self.model = Model()
+        self.update_plots()
         self.ui.statusbar.clearMessage()
 
     def _angle_index(self):
@@ -104,17 +99,12 @@ class Polarizations(QtWidgets.QMainWindow):
         index = self._angle_index()
         if val is None:
             val = self._angle_widgets[index-1].spin.value()
-        data = self.model.plot_data(index, val)
-        self.ui.mplwdg.figure_update(data)
-
-    def update_axes_labels(self):
-        index = self._angle_index()
-        labels = self.model.plot_axes_labels(index-1)
-        self.ui.mplwdg.set_axes_labels(labels)
+        self.classes_widget.figure_update(
+            self.model.data_for_plots(index, val),
+            self.model.axes_labels_for_plot(index-1))
 
     def _radio_toggled(self, button, checked):
         self.update_plots()
-        self.update_axes_labels()
 
     def _add_angle_widget(self, wdg):
         wdg.spin.valueChanged.connect(self.update_plots)
@@ -122,23 +112,11 @@ class Polarizations(QtWidgets.QMainWindow):
         self.ui.anglesLayout.addWidget(wdg)
         self._radio_group.addButton(wdg.radio)
 
-    def _dir_toggled(self, button, checked):
-        if checked:
-            direction = button.text().split(':')[0]
-            self.model = Model(direction)
-            self.ui.mplwdg.set_titles(self.model.titles)
-            self.update_plots()
-
-    def _add_dir_radio(self, wdg):
-        self.ui.anglesLayout.insertWidget(0, wdg)
-        self._dir_group.addButton(wdg)
-
 def run():
-    app = QtWidgets.QApplication(sys.argv)
-    mpl.rcParams['figure.dpi'] = app.desktop().physicalDpiX()
+    app = pg.mkQApp("Polarizations explorer")
     polarizations = Polarizations()
     polarizations.show()
-    sys.exit(app.exec_())
+    pg.exec()
 
 # Local Variables:
 # compile-comand: "make -k"
