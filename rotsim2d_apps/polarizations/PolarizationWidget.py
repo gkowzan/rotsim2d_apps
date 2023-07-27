@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
@@ -10,12 +10,14 @@ pg.setConfigOptions(
 
 class PolarizationClassItem(pg.PlotItem):
     "Extends PlotItem and contains ImageItem."
-    def __init__(self, angles_size: int, title: str):
+    def __init__(self, angles_size: int, title: str,
+                 levels: Tuple[float, float]=(-1.0, 1.0)):
         pg.PlotItem.__init__(self)
+        self.levels = levels
         self.image_item = pg.ImageItem(np.zeros((angles_size, angles_size)),
                                        autoLevels=False,
                                        # axisOrder='row-major',
-                                       levels=(-1.0, 1.0))
+                                       levels=self.levels)
         # self.image_item.setColorMap("CET-D1A")
         self.image_item.setColorMap(pg.colormap.get('bwr', source='matplotlib'))
         tr = QtGui.QTransform()
@@ -38,7 +40,7 @@ class PolarizationClassItem(pg.PlotItem):
         self.addItem(self.hline, ignoreBounds=True)
 
     def update(self, data: np.ndarray, labels: Sequence[str]):
-        self.image_item.setImage(data, levels=(-1.0, 1.0))
+        self.image_item.setImage(data, levels=self.levels)
         self.setLabel('bottom', labels[0], units='&#176;')
         self.setLabel('left', labels[1], units='&#176;')
 
@@ -113,20 +115,31 @@ class PolarizationClassesWidget(pg.GraphicsLayoutWidget):
         self.addItem(self.cbar, 2, 4, 2, 1)
         self.nextRow()
         self.polarization_items = []
-        for i in range(1, 4):
+
+        for i in (1, 2, 3):
             self.polarization_items.append(
                 PolarizationClassItem(
                     angles_size,
                     r'<span style="font-weight:bold; font-size:14pt;">&Theta;<sub>{:d}</sub></span>'.format(i)))
             self.addItem(self.polarization_items[-1])
+
         self.nextRow()
-        for i in range(4, 8):
+
+        for i in (4, 5, 6):
             self.polarization_items.append(
                 PolarizationClassItem(
                     angles_size,
                     r'<span style="font-weight:bold; font-size:14pt;">&Theta;<sub>{:d}</sub></span>'.format(i)))
             self.addItem(self.polarization_items[-1])
-        self.cbar.setImageItem([pi.image_item for pi in self.polarization_items])
+
+        self.polarization_items.append(
+            PolarizationClassItem(
+                angles_size,
+                r'<span style="font-weight:bold; font-size:14pt;">&Theta;<sub>7</sub></span>',
+                (-2.0, 2.0)))
+        self.addItem(self.polarization_items[-1])
+
+        self.cbar.setImageItem([pi.image_item for pi in self.polarization_items[:-1]])
 
         self.xhair_mgr = CrosshairManager(self)
         self.scene().sigMouseMoved.connect(self.xhair_mgr.mouse_moved)
