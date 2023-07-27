@@ -50,6 +50,21 @@ class AngleWidget(QtWidgets.QWidget, Ui_AngleWidget):
         self.radio.toggled.connect(self.spin.setEnabled)
         self.radio.setChecked(enabled)
 
+class DocLabel(QtWidgets.QLabel):
+    def __init__(self, ref_widget: QtWidgets.QWidget):
+        super(DocLabel, self).__init__("Select one of the angles above to fix it at a specific value.<br><br>Polarization dependence as a function of remaining angles for each polarization class is shown on the right.<br><br>&Phi;<sub>1</sub> is fixed at 0&#176;.<br><br>The scale of &Theta;<sub>7</sub> class goes from -2 to +2.")
+        self.setWordWrap(True)
+        self.ref_widget = ref_widget
+
+    def sizeHint(self) -> QtCore.QSize:
+        super_hint = super().sizeHint()
+        old_width = super_hint.width()
+        super_hint.setWidth(self.ref_widget.sizeHint().width())
+        super_hint.setHeight(round(super_hint.height()*\
+                                   old_width/super_hint.width()))
+
+        return super_hint
+
 
 class Polarizations(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -72,8 +87,7 @@ class Polarizations(QtWidgets.QMainWindow):
         self._add_angle_widget(AngleWidget("Φ<sub>4</sub>"))
         self.ui.anglesLayout.setSpacing(10)
 
-        label1 = QtWidgets.QLabel("Select one of the angles above to fix it at a specific value.<br><br>Polarization dependence as a function of remaining angles for each polarization class is shown on the right.<br><br>&Phi;<sub>1</sub> is fixed at 0&#176;.")
-        label1.setWordWrap(True)
+        label1 = DocLabel(self._angle_widgets[0])
         self.ui.anglesLayout.addWidget(label1)
 
         # add polarization widget
